@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e0b09">
+<title>Časopisárna</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23e4553f'/%3E%3Ctext x='16' y='24' font-family='Georgia,serif' font-size='22' font-weight='700' text-anchor='middle' fill='white'%3E%C4%8C%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="app/style.css">
+<script>
+  // značka: app/brand/, nebo brands/<název>/ při ?brand=<název>
+  (function () {
+    var m = /[?&]brand=([a-z0-9-]+)/.exec(location.search);
+    var dir = m ? 'brands/' + m[1] + '/' : 'app/brand/';
+    document.write('<link rel="stylesheet" href="' + dir + 'brand.css"><script src="' + dir + 'brand.js"><\/script>');
+  })();
+</script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-next" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="4" width="7" height="7" rx="1"/><rect x="13.5" y="4" width="7" height="7" rx="1"/><rect x="3.5" y="13" width="7" height="7" rx="1"/><rect x="13.5" y="13" width="7" height="7" rx="1"/></g></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/></g></symbol>
+  <symbol id="i-full" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-fitw" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M6 9l-3 3 3 3M18 9l3 3-3 3"/></g></symbol>
+  <symbol id="i-fitp" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8"><rect x="6" y="3" width="12" height="18" rx="1.5"/></g></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/></g></symbol>
+  <symbol id="i-zoom" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5M10.5 8v5M8 10.5h5"/></g></symbol>
+  <symbol id="i-sort-asc" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 19V5M4 8l3-3 3 3M13 7h7M13 12h5M13 17h3"/></g></symbol>
+  <symbol id="i-sort-desc" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 5v14M4 16l3 3 3-3M13 7h3M13 12h5M13 17h7"/></g></symbol>
+  <symbol id="i-dice" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="3.5"/></g><g fill="currentColor"><circle cx="8.6" cy="8.6" r="1.4"/><circle cx="15.4" cy="15.4" r="1.4"/><circle cx="12" cy="12" r="1.4"/></g></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-small" viewBox="0 0 24 24"><rect x="8" y="7" width="8" height="11" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+  <symbol id="i-palette" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.1 0 1.7-.8 1.7-1.6 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.7-1.6 1.6-1.6h1.9a4.4 4.4 0 0 0 4.3-4.4c0-3.9-3.8-7-8.5-7z"/></g><g fill="currentColor"><circle cx="7.6" cy="11" r="1.2"/><circle cx="10" cy="7.4" r="1.2"/><circle cx="14.4" cy="7.4" r="1.2"/></g></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 7.5a2 2 0 0 1 2-2h4l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/><path d="M12 11v5M9.5 13.5h5"/></g></symbol>
+  <symbol id="i-desktop" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="12" rx="1.5"/><path d="M9 20h6M12 16.5V20"/></g></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M14 3.5H7.5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V8z"/><path d="M14 3.5V8h4.5M9 13h6M9 16.5h4"/></g></symbol>
+  <symbol id="i-ribbon" viewBox="0 0 24 24"><path d="M7 3.5h10a1 1 0 0 1 1 1V21l-6-4.2L6 21V4.5a1 1 0 0 1 1-1z" fill="var(--rb-fill, none)" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+  <symbol id="i-turn" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19.5V5.5a1 1 0 0 1 1-1h8l5 5v10a1 1 0 0 1-1 1H6"/><path d="M14 4.5v5h5"/><path d="M9 14.5a3.5 3.5 0 0 1 6-2.5M15.5 9.8v2.4h-2.4"/></g></symbol>
+  <symbol id="i-big" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="19" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+</svg>
+
+<!-- polička -->
+<section id="shelf" class="view shelf" hidden>
+  <div class="shelf-inner">
+    <header class="shelf-top">
+      <div class="brand">
+        <div id="brand-mark"><span class="wordmark">Časopisárna</span></div>
+        <span class="brand-sub" id="brand-tagline">Herní časopisy z vlastní sbírky</span>
+        <span class="brand-sub" id="shelf-stats"></span>
+      </div>
+      <nav class="mag-tabs" id="mag-tabs" aria-label="Časopis"></nav>
+      <div id="hero" class="hero"></div>
+      <div class="top-actions">
+        <button class="icon-btn" id="btn-library" title="Přidat časopisy" aria-label="Přidat časopisy" hidden><svg><use href="#i-folder"/></svg></button>
+        <button class="icon-btn" id="btn-theme" title="Vzhled knihovny" aria-label="Vzhled knihovny"><svg><use href="#i-palette"/></svg></button>
+        <button class="icon-btn" data-action="fullscreen" title="Celá obrazovka (F)" aria-label="Celá obrazovka"><svg><use href="#i-full"/></svg></button>
+      </div>
+      <div id="theme-pop" class="popover theme-pop" hidden>
+        <div class="popover-title">Vzhled knihovny</div>
+        <div class="theme-list" id="theme-list"></div>
+        <div class="theme-brand" id="theme-brand" hidden>
+          <button class="link-btn" type="button" data-brand="load">Načíst vzhled ze souboru…</button>
+          <button class="link-btn" type="button" data-brand="reset" hidden>Vrátit původní vzhled</button>
+        </div>
+      </div>
+      <div id="lib-pop" class="popover theme-pop lib-pop" hidden>
+        <div class="popover-title">Přidat časopisy</div>
+        <button class="lib-opt" type="button" data-pick="folder"><svg><use href="#i-folder"/></svg><span><b>Vybrat složku</b><em>se staženými časopisy, i s podsložkami</em></span></button>
+        <button class="lib-opt" type="button" data-pick="files"><svg><use href="#i-file"/></svg><span><b>Vybrat soubory</b><em>jednotlivé ZIP, PDF nebo CBZ, i víc najednou</em></span></button>
+        <p class="popover-note">ZIPy není potřeba rozbalovat a původní soubory zůstanou, jak jsou.</p>
+      </div>
+    </header>
+    <div id="lib-progress" class="lib-progress" aria-live="polite" hidden></div>
+
+    <nav class="shelf-toolbar" id="shelf-toolbar" aria-label="Výběr čísel">
+      <div class="seg" id="filter-seg" role="tablist">
+        <button data-filter="all">Vše <span class="count"></span></button>
+        <button data-filter="reading">Rozečtené <span class="count"></span></button>
+        <button data-filter="unread">Nepřečtené <span class="count"></span></button>
+        <button data-filter="done">Přečtené <span class="count"></span></button>
+        <button data-filter="bookmarks" hidden>Záložky <span class="count"></span></button>
+      </div>
+      <div class="year-chips" id="year-chips"></div>
+      <div class="toolbar-right">
+        <label class="search" title="Hledat číslo, rok nebo měsíc ( / )">
+          <svg><use href="#i-search"/></svg>
+          <input id="shelf-search" type="search" placeholder="Číslo, rok nebo slovo v textu…" autocomplete="off" spellcheck="false" aria-label="Hledat číslo">
+          <kbd>/</kbd>
+        </label>
+        <button class="icon-btn" id="btn-sort" title="Řazení" aria-label="Řazení"><svg><use href="#i-sort-asc"/></svg></button>
+        <label class="size-ctl" title="Velikost obálek (Ctrl + kolečko)">
+          <svg class="sm"><use href="#i-small"/></svg>
+          <input type="range" id="cover-size" min="96" max="240" step="4" aria-label="Velikost obálek">
+          <svg><use href="#i-big"/></svg>
+        </label>
+        <button class="btn btn-accent" id="btn-random" title="Otevřít náhodné číslo"><svg><use href="#i-dice"/></svg><span>Překvap mě</span></button>
+      </div>
+    </nav>
+
+    <section id="text-hits" class="text-hits" hidden></section>
+    <section id="bookmarks" class="bookmarks" hidden></section>
+    <div id="welcome" class="welcome" hidden></div>
+    <div id="sections" class="sections"></div>
+    <div id="shelf-empty" class="shelf-empty" hidden></div>
+    <footer class="shelf-foot" id="shelf-foot"></footer>
+  </div>
+</section>
+
+<!-- listování -->
+<section id="book-view" class="view book-view" hidden>
+  <header class="bar">
+    <button class="btn" id="btn-shelf" title="Zpět na poličku (Esc)"><svg><use href="#i-back"/></svg><span>Polička</span></button>
+    <div class="bar-title"><strong id="book-title"></strong><span id="book-date"></span></div>
+    <div class="bar-right">
+      <span id="page-indicator" class="page-indicator"></span>
+      <button class="icon-btn bm-btn" id="btn-bookmark-book" title="Založit tuhle stránku (B)" aria-label="Záložka" aria-pressed="false"><svg><use href="#i-ribbon"/></svg></button>
+      <button class="icon-btn" id="btn-overview" title="Přehled stran (G)" aria-label="Přehled stran"><svg><use href="#i-grid"/></svg></button>
+      <button class="icon-btn" id="btn-settings" title="Rychlost listování" aria-label="Nastavení"><svg><use href="#i-gear"/></svg></button>
+      <button class="icon-btn" data-action="fullscreen" title="Celá obrazovka (F)" aria-label="Celá obrazovka"><svg><use href="#i-full"/></svg></button>
+    </div>
+  </header>
+  <main id="book-area" class="book-area">
+    <button class="nav nav-prev" id="nav-prev" title="Předchozí (←)" aria-label="Předchozí strana"><svg><use href="#i-back"/></svg></button>
+    <div id="book-holder" class="book-holder">
+      <div id="book-shadow" class="book-shadow"></div>
+    </div>
+    <button class="nav nav-next" id="nav-next" title="Další (→)" aria-label="Další strana"><svg><use href="#i-next"/></svg></button>
+    <a id="next-issue" class="next-issue" hidden></a>
+    <aside id="intro" class="intro" aria-live="polite"></aside>
+    <div class="zoom-pill" id="book-zoom" title="Lupa (+ / −, Ctrl + kolečko)">
+      <button class="icon-btn" id="bz-out" title="Oddálit (−)" aria-label="Oddálit" disabled><svg><use href="#i-minus"/></svg></button>
+      <span class="zoom-label" id="bz-label">100 %</span>
+      <button class="icon-btn" id="bz-in" title="Přiblížit (+)" aria-label="Přiblížit"><svg><use href="#i-plus"/></svg></button>
+    </div>
+    <div id="help" class="help" hidden>
+      <div class="help-card" role="dialog" aria-label="Jak se v časopise listuje">
+        <h2>Jak se v časopise listuje</h2>
+        <ul>
+          <li><svg><use href="#i-turn"/></svg><div><b>Otočit list</b>
+            <span class="for-mouse">Táhni za roh stránky, klikni na šipku po straně, nebo zmáčkni ←&nbsp;→.</span>
+            <span class="for-touch">Přejeď prstem po stránce, nebo ťukni na šipku po straně.</span></div></li>
+          <li><svg><use href="#i-zoom"/></svg><div><b>Číst drobný text</b>
+            <span class="for-mouse">Klikni na stránku a zvětší se. Kolečkem posouváš, +&nbsp;a&nbsp;− přibližuješ.</span>
+            <span class="for-touch">Ťukni na stránku a roztáhni ji dvěma prsty.</span></div></li>
+          <li><svg><use href="#i-ribbon"/></svg><div><b>Založit stránku</b>
+            <span>Stužkou nahoře si stránku založíš, najdeš ji pak na poličce v Záložkách.</span></div></li>
+          <li><svg><use href="#i-search"/></svg><div><b>Najít hru nebo článek</b>
+            <span>Na poličce napiš do hledání slovo a najdu ho v textu všech časopisů.</span></div></li>
+        </ul>
+        <button class="btn btn-accent" type="button" data-help-close>Rozumím, jdu číst</button>
+      </div>
+    </div>
+  </main>
+  <footer class="bar bar-bottom">
+    <input type="range" id="page-slider" class="page-slider" min="0" max="0" value="0" step="1" aria-label="Posun v čísle">
+    <span class="hint">Klik na stránku = čtení · + / Ctrl + kolečko = lupa · ← → nebo kolečko = otočit list · podržet = rychle</span>
+  </footer>
+
+  <div id="settings-pop" class="popover" hidden>
+    <div class="popover-title">Animace listování</div>
+    <div class="seg seg-full" id="speed-seg">
+      <button data-speed="off">Vypnuto</button>
+      <button data-speed="fast">Rychlá</button>
+      <button data-speed="normal">Normální</button>
+      <button data-speed="slow">Pomalá</button>
+    </div>
+    <p class="popover-note">Platí pro šipky, kolečko, klik i tah. Podržená šipka přeskakuje stránky rychle bez animace.</p>
+    <button class="link-btn help-link" type="button" data-help-open>Jak se v časopise listuje (?)</button>
+  </div>
+</section>
+
+<!-- přehled stran -->
+<section id="overview" class="overview" hidden>
+  <header class="bar">
+    <strong>Přehled stran</strong>
+    <button class="icon-btn" id="btn-overview-close" title="Zavřít (Esc)" aria-label="Zavřít"><svg><use href="#i-close"/></svg></button>
+  </header>
+  <div id="overview-grid" class="overview-grid"></div>
+</section>
+
+<!-- lupa -->
+<section id="reader" class="reader" hidden>
+  <div id="reader-stage" class="reader-stage">
+    <div id="reader-sheet" class="reader-sheet"></div>
+  </div>
+  <header class="bar reader-bar">
+    <button class="btn" id="reader-close" title="Zpět na dvoustranu (Esc)"><svg><use href="#i-back"/></svg><span>Zpět</span></button>
+    <div class="bar-title">
+      <button class="icon-btn" id="reader-prev" title="Předchozí (←)" aria-label="Předchozí"><svg><use href="#i-back"/></svg></button>
+      <strong id="reader-page"></strong>
+      <button class="icon-btn" id="reader-next" title="Další (→)" aria-label="Další"><svg><use href="#i-next"/></svg></button>
+    </div>
+    <div class="bar-right">
+      <button class="icon-btn bm-btn" id="btn-bookmark" title="Založit tuhle stránku (B)" aria-label="Záložka" aria-pressed="false"><svg><use href="#i-ribbon"/></svg></button>
+      <div class="seg seg-mini" id="mode-seg" title="Přepnout stránka / dvoustrana (D)">
+        <button data-mode="page">Stránka</button>
+        <button data-mode="spread">Dvoustrana</button>
+      </div>
+      <button class="icon-btn" data-action="fullscreen" title="Celá obrazovka (F)" aria-label="Celá obrazovka"><svg><use href="#i-full"/></svg></button>
+    </div>
+  </header>
+  <div class="zoom-pill" id="reader-zoom-pill">
+    <button class="icon-btn" id="zoom-out" title="Oddálit (−)" aria-label="Oddálit"><svg><use href="#i-minus"/></svg></button>
+    <span id="reader-zoom" class="zoom-label" title="Celá stránka (0)"></span>
+    <button class="icon-btn" id="zoom-in" title="Přiblížit (+)" aria-label="Přiblížit"><svg><use href="#i-plus"/></svg></button>
+    <span class="sep"></span>
+    <button class="icon-btn" id="zoom-fitw" title="Na šířku obrazovky (W)" aria-label="Na šířku"><svg><use href="#i-fitw"/></svg></button>
+    <button class="icon-btn" id="zoom-fitp" title="Celá stránka (0)" aria-label="Celá stránka"><svg><use href="#i-fitp"/></svg></button>
+  </div>
+  <div id="minimap" class="minimap" aria-hidden="true">
+    <div id="mm-sheet" class="mm-sheet"></div>
+    <div id="mm-view" class="mm-view"></div>
+  </div>
+  <div id="reader-loading" class="reader-loading" hidden>načítám plné rozlišení…</div>
+  <div id="reader-hint" class="reader-hint" hidden>Tažení / kolečko = posun · Ctrl + kolečko = zoom · dvojklik = detail · mezerník = dál · Esc = zpět</div>
+</section>
+
+<div id="zoom-note" class="zoom-note" hidden>Stránka je přiblížená prohlížečem – sevři dva prsty na touchpadu (nebo Ctrl + kolečko dolů), ať se vrátí.</div>
+
+<div id="toast" class="toast" role="status" hidden></div>
+<script src="app/vendor/page-flip.browser.js"></script>
+<script src="app/app.js"></script>
+</body>
+</html>

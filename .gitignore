@@ -1,0 +1,18 @@
+# převedené obrázky, časopisy a sestavené balíčky
+data/
+casopisy/
+dist/
+build/
+python/
+
+# osobní nastavení a poznámky
+/config.json
+nahled/
+navrhy/
+
+# jiné značky (logo a vzhled patří jejich majitelům)
+brands/*
+!brands/README.md
+
+__pycache__/
+*.pyc

@@ -1,0 +1,66 @@
+Časopisárna - čtečka naskenovaných herních časopisů
+
+Polička s obálkami, listování jako ve skutečném časopise a lupa na drobný
+text. Běží jen na vašem počítači, nic se nikam neposílá.
+
+Jak začít
+---------
+1. Dvakrát klikněte na "Spustit čtečku". Otevře se prohlížeč. Když se
+   Windows zeptá, jestli soubor opravdu spustit, klikněte na "Spustit".
+2. Klikněte na "Vybrat složku s časopisy" a vyberte složku, kde máte
+   stažené časopisy (PDF, CBZ nebo ZIP). Nebo klikněte na "vyber jednotlivé
+   stažené soubory" a označte přímo stažené soubory. ZIPy není potřeba
+   rozbalovat.
+3. Čtečka je sama připraví a postaví na poličku. První převod velké
+   sbírky chvíli trvá, hotová čísla ale můžete číst hned.
+
+Po prvním převodu čtečka nabídne zástupce na plochu, příště stačí
+kliknout na něj. Čísla, která do složky mezitím přibudou, najde sama.
+Další časopisy přidáte tlačítkem se složkou vpravo nahoře na poličce.
+
+Černé okno, které se při spuštění otevře, nechte otevřené, dokud čtete.
+Jeho zavřením čtečku vypnete.
+
+Skeny si stáhněte od jejich autorů, například od Herní historie, z. s.
+(https://www.herniarchiv.cz) nebo z archive.org. Čtečka žádné skeny
+neobsahuje a vaše soubory nijak nemění.
+
+Ovládání
+--------
+Klik na obálku           ukáže číslo, dalším klikem se otevře
+Šipky, kolečko           otáčení stránek (podržená šipka listuje rychle)
+Klik na stránku          lupa na jednu stránku
++ / Ctrl + kolečko       lupa na dvoustranu
+Mezerník                 v lupě o obrazovku dál
+B                        záložka na stránce (na poličce pak v Záložkách)
+G                        přehled stran
+F                        celá obrazovka
+?                        nápověda
+Esc                      zpět
+
+Hledání na poličce najde číslo, rok a měsíc, a taky slovo v textu
+časopisů, pokud skeny mají textovou vrstvu (třeba Excalibur od Herního
+archivu). Kliknutím na nález se stránka otevře a slovo je zvýrazněné.
+
+Rozečtené stránky a záložky si pamatuje čtečka, ne prohlížeč. Platí
+proto i na tabletu v domácí síti a nezmizí s historií prohlížeče.
+
+Aktualizace
+-----------
+Dvakrát klikněte na "Aktualizovat". Stáhne nejnovější verzi z GitHubu
+(https://github.com/honziksorm/casopisarna) a vymění jen soubory čtečky.
+Časopisy, rozečtené stránky i nastavení zůstanou.
+
+Pro pokročilé
+-------------
+Do složky "program" není potřeba chodit, je v ní čtečka sama, přenosný
+Python, převedené obrázky (složka "data") a nastavení (config.json).
+Tablet v domácí síti: spusťte "Spustit čtečku" z příkazové řádky
+s parametrem --lan a v tabletu otevřete adresu, kterou vypíše.
+
+Licence
+-------
+Čtečka je svobodný software pod licencí GNU AGPL 3.0 (program\licenses\AGPL-3.0.txt).
+Používá StPageFlip (MIT), PyMuPDF (AGPL, zdrojový kód na
+https://github.com/pymupdf/PyMuPDF), Pillow (HPND), Python (PSF)
+a písma pod licencí SIL OFL. Licence jsou ve složce program\licenses.
