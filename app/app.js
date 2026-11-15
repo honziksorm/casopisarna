@@ -1008,7 +1008,7 @@
     el.intro.querySelector('.intro-sub').textContent = issue.date || '';
     el.intro.querySelector('.intro-specs').textContent = (read
       ? [`${n} ${plural(n, 'strana', 'strany', 'stran')}`, resume ? `rozečteno na str. ${resume + 1}` : '', p && p.t ? ago(p.t) : '']
-      : ['Ještě neotevřené']).filter(Boolean).join(' · ');
+      : ['Ještě neotevřené']).filter(Boolean).map((t) => t.replace(/ /g, ' ')).join(' · '); // zalomit jen mezi údaji
     updateIntro();
   }
   el.intro.addEventListener('click', (e) => {
