@@ -4,8 +4,10 @@ Navíc nastavuje správné MIME typy (registr ve Windows je umí rozbít), obrá
 dává dlouhou cache, při obsazeném portu zkusí další a po startu otevře prohlížeč.
 Po spuštění na pozadí převede nová čísla a čtečce nabídne výběr složky s časopisy.
 Poslouchá jen na tomto počítači, pro tablet v domácí síti: python server.py --lan
+(nebo tlačítko Do telefonu ve čtečce, které síť zapne za běhu).
 """
 import argparse
+import io
 import json
 import os
 import re
@@ -20,10 +22,12 @@ import zipfile
 import webbrowser
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, quote, urlparse
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(ROOT, "data")
+PORT = 8642
+LAN = {"url": None}  # adresa v domácí síti, když je zapnutá
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)  # přibalený Python (embed) složku skriptu do cesty nepřidává
 LOCAL = ("127.0.0.1", "::1")
@@ -395,6 +399,85 @@ def page_hits(iid, page, q):
     return rects[:300]
 
 
+MONTHS = ["leden", "únor", "březen", "duben", "květen", "červen", "červenec", "srpen", "září", "říjen", "listopad", "prosinec"]
+TRIP_H = 1600  # výška stránky v souboru na cestu, na telefonu jde ještě dobře zvětšit
+CBZ_LOCK = threading.Lock()
+
+
+def comic_info(issue, series):
+    """ComicInfo.xml: čtečky komiksů z něj berou název, číslo a datum."""
+    from xml.sax.saxutils import escape
+    m = re.match(r"(\S+)\s+(\d{4})$", issue.get("date") or "")
+    month = MONTHS.index(m.group(1).lower()) + 1 if m and m.group(1).lower() in MONTHS else None
+    fields = [("Title", issue.get("title")), ("Series", series), ("Number", issue.get("number")),
+              ("Year", issue.get("year")), ("Month", month), ("PageCount", len(issue["pages"])), ("LanguageISO", "cs")]
+    body = "".join(f"  <{k}>{escape(str(v))}</{k}>\n" for k, v in fields if v not in (None, ""))
+    return f'<?xml version="1.0" encoding="utf-8"?>\n<ComicInfo>\n{body}</ComicInfo>\n'
+
+
+def trip_cbz(iid):
+    """Číslo jako CBZ na cestu (JPEG do 1600 px, čte ho každá čtečka komiksů). Hotové leží v data/cbz/."""
+    with open(os.path.join(DATA, "manifest.json"), encoding="utf-8") as f:
+        man = json.load(f)
+    issue = next((i for i in man["issues"] if i["id"] == iid), None)
+    if not issue:
+        return None, None
+    series = next((m.get("title") for m in man.get("magazines", []) if m.get("id") == issue.get("magazine")), None)
+    src = os.path.join(DATA, "issues", iid)
+    out = os.path.join(DATA, "cbz", iid + ".cbz")
+    name = issue.get("title") or iid
+    with CBZ_LOCK:
+        if os.path.exists(out) and os.path.getmtime(out) >= os.path.getmtime(os.path.join(src, "issue.json")):
+            return out, name
+        os.makedirs(os.path.dirname(out), exist_ok=True)
+        tmp = out + ".tmp"
+        try:
+            write_cbz(tmp, src, issue, series)
+        except Exception:
+            if os.path.exists(tmp):
+                os.remove(tmp)
+            raise
+        os.replace(tmp, out)
+    return out, name
+
+
+def write_cbz(tmp, src, issue, series):
+    from PIL import Image
+    with zipfile.ZipFile(tmp, "w", zipfile.ZIP_STORED) as z:  # JPEG se už víc nezmenší
+        for n, page in enumerate(issue["pages"], 1):
+            view = os.path.join(src, "view", page["f"] + ".webp")
+            path = view if not page.get("nv") and os.path.exists(view) else os.path.join(src, "full", page["f"] + ".jpg")
+            arc = f"{n:03d}.jpg"
+            with Image.open(path) as im:
+                if path.endswith(".jpg") and im.height <= TRIP_H * 1.15:
+                    z.write(path, arc)  # malý sken jde beze změny
+                    continue
+                im = im.convert("RGB")
+                if im.height > TRIP_H:
+                    im = im.resize((round(im.width * TRIP_H / im.height), TRIP_H), Image.LANCZOS)
+                buf = io.BytesIO()
+                im.save(buf, "JPEG", quality=82, optimize=True)
+                z.writestr(arc, buf.getvalue())
+        z.writestr("ComicInfo.xml", comic_info(issue, series))
+
+
+def start_lan():
+    """Zpřístupní čtečku v domácí síti za běhu (druhý server na adrese počítače)."""
+    if LAN["url"]:
+        return {"ok": True, "url": LAN["url"]}
+    ip = lan_ip()
+    if not ip:
+        return {"ok": False, "error": "Počítač teď není připojený k žádné síti."}
+    try:
+        srv = ThreadingHTTPServer((ip, PORT), partial(Handler, directory=ROOT))
+    except OSError as e:
+        return {"ok": False, "error": f"Síť se nepodařilo zapnout: {e}"}
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    LAN["url"] = f"http://{ip}:{PORT}/"
+    print(f"Čtečka je teď i v domácí síti: {LAN['url']}")
+    return {"ok": True, "url": LAN["url"]}
+
+
 class Handler(SimpleHTTPRequestHandler):
     extensions_map = {
         **SimpleHTTPRequestHandler.extensions_map,
@@ -421,6 +504,17 @@ class Handler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def send_download(self, path, filename):
+        plain = unicodedata.normalize("NFD", filename).encode("ascii", "ignore").decode()
+        plain = re.sub(r"[^A-Za-z0-9._-]+", "_", plain).strip("_") or "casopis.cbz"
+        self.send_response(200)
+        self.send_header("Content-Type", "application/vnd.comicbook+zip")
+        self.send_header("Content-Length", str(os.path.getsize(path)))
+        self.send_header("Content-Disposition", f"attachment; filename=\"{plain}\"; filename*=UTF-8''{quote(filename)}")
+        self.end_headers()
+        with open(path, "rb") as f:
+            shutil.copyfileobj(f, self.wfile)
+
     def do_GET(self):
         if self.path.split("?", 1)[0] == "/api/status":
             try:
@@ -433,7 +527,8 @@ class Handler(SimpleHTTPRequestHandler):
                                    "library": has_library(read_config()), "can_pick": self.local(),
                                    "can_shortcut": bool(self.local() and lnk and launcher()),
                                    "shortcut": bool(lnk and os.path.exists(lnk)),
-                                   "custom_brand": os.path.isfile(os.path.join(ROOT, "brand-puvodni", "brand.js"))})
+                                   "custom_brand": os.path.isfile(os.path.join(ROOT, "brand-puvodni", "brand.js")),
+                                   "lan": LAN["url"]})
         url = urlparse(self.path)
         qs = {k: v[0] for k, v in parse_qs(url.query).items()}
         try:
@@ -443,12 +538,15 @@ class Handler(SimpleHTTPRequestHandler):
                 return self.send_json(search(qs.get("q", "")))
             if url.path == "/api/hits":
                 return self.send_json(page_hits(qs.get("id", ""), int(qs.get("page", -1)), qs.get("q", "")))
+            if url.path == "/api/cbz":
+                path, name = trip_cbz(qs.get("id", ""))
+                return self.send_download(path, name + ".cbz") if path else self.send_error(404)
         except Exception as e:
             return self.send_json({"error": str(e)}, 500)
         return super().do_GET()
 
     def do_POST(self):
-        if self.path not in ("/api/library", "/api/shortcut", "/api/reader", "/api/brand"):
+        if self.path not in ("/api/library", "/api/shortcut", "/api/reader", "/api/brand", "/api/lan"):
             return self.send_error(404)
         # rozečtení ukládá i tablet v domácí síti, výběr složek a plochu jen tento počítač
         if self.headers.get("X-Reader") != "1" or (self.path != "/api/reader" and not self.local()):
@@ -459,6 +557,8 @@ class Handler(SimpleHTTPRequestHandler):
                 return self.send_json(save_reader(body))
             if self.path == "/api/brand":
                 return self.send_json(install_brand(body.get("path"), bool(body.get("reset"))))
+            if self.path == "/api/lan":
+                return self.send_json(start_lan())
             self.send_json(make_shortcut() if self.path == "/api/shortcut" else add_library(body.get("mode", "folder"), body.get("paths")))
         except Exception as e:
             self.send_json({"ok": False, "error": f"Něco se nepovedlo: {e}"}, 500)
@@ -539,7 +639,7 @@ def main():
         sys.stderr.reconfigure(encoding="utf-8", errors="replace")
     except Exception:
         pass
-    global DATA
+    global DATA, PORT
     cfg = read_config()
     DATA = os.path.normpath(os.path.join(ROOT, cfg.get("output_dir", "data")))
 
@@ -562,6 +662,9 @@ def main():
     if port != args.port:
         print(f"Port {args.port} je obsazený, používám {port}. Rozečtené stránky se pamatují pro každý port zvlášť.")
     httpd = ThreadingHTTPServer((host, port), partial(Handler, directory=ROOT))
+    PORT = port
+    if args.lan and lan_ip():
+        LAN["url"] = f"http://{lan_ip()}:{port}/"
     url = f"http://127.0.0.1:{port}/"
     name = app_name()
     if os.name == "nt":

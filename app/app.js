@@ -110,6 +110,7 @@
     filterSeg: $('#filter-seg'), chips: $('#year-chips'), search: $('#shelf-search'), sortBtn: $('#btn-sort'),
     size: $('#cover-size'), random: $('#btn-random'), sections: $('#sections'), empty: $('#shelf-empty'),
     welcome: $('#welcome'), libProgress: $('#lib-progress'), libBtn: $('#btn-library'), libPop: $('#lib-pop'),
+    phoneBtn: $('#btn-phone'), phonePop: $('#phone-pop'),
     bookmarksEl: $('#bookmarks'), textHitsEl: $('#text-hits'), help: $('#help'), toast: $('#toast'),
     bmBtn: $('#btn-bookmark'), bmBtnBook: $('#btn-bookmark-book'),
     book: $('#book-view'), area: $('#book-area'), holder: $('#book-holder'), shadow: $('#book-shadow'),
@@ -996,6 +997,8 @@
             ? `<button class="btn btn-accent" data-act="resume">Pokračovat na str. ${resume + 1}<svg><use href="#i-next"/></svg></button>
                <button class="btn btn-ghost" data-act="open">Od začátku</button>`
             : `<button class="btn btn-accent" data-act="open">Otevřít časopis<svg><use href="#i-next"/></svg></button>`}
+          <a class="btn trip-btn" href="api/cbz?id=${encodeURIComponent(issue.id)}" download data-trip
+            title="Stáhne číslo jako soubor CBZ, který přečteš v telefonu i bez internetu"><svg><use href="#i-download"/></svg>Na cestu<small>asi ${Math.max(1, Math.round(n * 0.42))} MB</small></a>
         </div>
         <div class="intro-hint">nebo klikni na obálku · <kbd>→</kbd></div>
         <nav class="intro-nav">
@@ -1012,6 +1015,10 @@
     updateIntro();
   }
   el.intro.addEventListener('click', (e) => {
+    if (e.target.closest('[data-trip]')) {
+      toast('Připravuju číslo na cestu, u tlustých čísel to chvíli trvá. Pak ho otevři v aplikaci na komiksy, třeba Librera.');
+      return;
+    }
     const b = e.target.closest('button');
     if (!b) return;
     if (b.dataset.act === 'resume') { const p = progress[state.issue.id]; openAt(p ? p.page : 1); }
@@ -1375,6 +1382,7 @@
     if (!el.settingsPop.hidden && !el.settingsPop.contains(e.target) && !el.settingsBtn.contains(e.target)) closePopover();
     if (!el.themePop.hidden && !el.themePop.contains(e.target) && !el.themeBtn.contains(e.target)) el.themePop.hidden = true;
     if (!el.libPop.hidden && !el.libPop.contains(e.target) && !el.libBtn.contains(e.target)) el.libPop.hidden = true;
+    if (!el.phonePop.hidden && !el.phonePop.contains(e.target) && !el.phoneBtn.contains(e.target)) el.phonePop.hidden = true;
   });
 
   // přehled stran
@@ -2546,7 +2554,7 @@
     getStatus().then((st) => {
       if (!st) return;
       lib.status = st;
-      el.libBtn.hidden = !st.can_pick;
+      el.libBtn.hidden = el.phoneBtn.hidden = !st.can_pick;
       const was = lib.running;
       lib.running = st.running;
       if (st.running) {
@@ -2614,7 +2622,35 @@
   });
   window.addEventListener('pagehide', () => sync.flush());
 
-  el.libBtn.addEventListener('click', () => { el.themePop.hidden = true; el.libPop.hidden = !el.libPop.hidden; });
+  el.libBtn.addEventListener('click', () => { el.themePop.hidden = el.phonePop.hidden = true; el.libPop.hidden = !el.libPop.hidden; });
+
+  // čtení v telefonu: zapne čtečku v domácí síti a ukáže adresu jako QR kód
+  function qrSvg(text) {
+    const qr = qrcode(0, 'M');
+    qr.addData(text);
+    qr.make();
+    const n = qr.getModuleCount();
+    let d = '';
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (qr.isDark(r, c)) d += `M${c + 2} ${r + 2}h1v1h-1z`;
+    return `<svg viewBox="0 0 ${n + 4} ${n + 4}" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path d="${d}" fill="#000"/></svg>`;
+  }
+  el.phoneBtn.addEventListener('click', () => {
+    el.themePop.hidden = el.libPop.hidden = true;
+    el.phonePop.hidden = !el.phonePop.hidden;
+    if (el.phonePop.hidden) return;
+    const box = document.getElementById('phone-qr');
+    const url = document.getElementById('phone-url');
+    box.innerHTML = '';
+    url.textContent = 'Zapínám čtečku v domácí síti…';
+    fetch('api/lan', { method: 'POST', headers: { 'X-Reader': '1', 'Content-Type': 'application/json' }, body: '{}' })
+      .then((r) => r.json())
+      .then((res) => {
+        if (!res.ok) { url.textContent = res.error || 'Síť se nepodařilo zapnout.'; return; }
+        box.innerHTML = qrSvg(res.url);
+        url.textContent = res.url;
+      })
+      .catch(() => { url.textContent = 'Čtečka neodpovídá. Běží ještě její okno?'; });
+  });
   el.libPop.addEventListener('click', (e) => { const b = e.target.closest('[data-pick]'); if (b) pickLibrary(b.dataset.pick); });
   el.welcome.addEventListener('click', (e) => { const b = e.target.closest('[data-pick]'); if (b) pickLibrary(b.dataset.pick); });
   el.libProgress.addEventListener('click', (e) => {
@@ -2642,7 +2678,7 @@
       mergeReader(rd);
       lib.status = st;
       lib.running = !!(st && st.running);
-      if (st) el.libBtn.hidden = !st.can_pick;
+      if (st) el.libBtn.hidden = el.phoneBtn.hidden = !st.can_pick;
       if (m && m.issues && m.issues.length) useManifest(m);
       else showWelcome(true);
       renderProgress();

@@ -668,6 +668,19 @@ kbd {
 .intro-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 14px; }
 .intro-actions .btn { padding: 10px 14px; font-size: 14px; }
 .intro-hint { margin-top: 12px; font-size: 12.5px; color: var(--ink-3); }
+.intro-actions .trip-btn { padding: 7px 10px; font-size: 13px; color: var(--ink-2); border: 1px dashed var(--line-2); }
+.intro-actions .trip-btn:hover { color: var(--ink); border-color: var(--hi); }
+.trip-btn svg { width: 16px; height: 16px; }
+.trip-btn small { font: 400 14px/1 var(--pixel); color: var(--ink-3); margin-left: 2px; text-transform: uppercase; }
+
+/* čtení v telefonu: kroky a QR kód */
+.phone-pop { width: 330px; }
+.phone-steps { margin: 0; padding: 0 0 0 20px; display: grid; gap: 10px; font-size: 13.5px; color: var(--ink-2); line-height: 1.45; }
+.phone-steps b { color: var(--ink); }
+.phone-qr { width: 168px; margin: 10px 0 6px; }
+.phone-qr:empty { display: none; }
+.phone-qr svg { width: 100%; height: auto; border-radius: 4px; }
+.phone-url { display: block; font: 400 17px/1.2 var(--pixel); color: var(--hi); word-break: break-all; }
 .intro-nav { display: flex; justify-content: space-between; gap: 6px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); }
 .intro-nav .btn { padding: 6px 4px; font: 400 16px/1 var(--pixel); color: var(--ink-3); text-transform: uppercase; letter-spacing: .03em; }
 .intro-nav .btn:hover { color: var(--ink); }
