@@ -1,0 +1,16 @@
+{
+  "name": "Časopisárna",
+  "short_name": "Časopisárna",
+  "description": "Čtečka herních časopisů z 90. let",
+  "lang": "cs",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0e0b09",
+  "theme_color": "#0e0b09",
+  "icons": [
+    { "src": "app/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "app/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "app/icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -132,6 +132,7 @@
   };
 
   const imgUrl = (issue, page, kind) => {
+    if (kind === 'full' && offline.away && offline.saved.has(issue.id)) kind = 'view'; // v telefonu je uložené to na listování
     if (kind === 'view' && page.nv) kind = 'full'; // malé skeny nemají view/
     return `data/issues/${encodeURIComponent(issue.id)}/${kind}/${page.f}.${kind === 'full' ? 'jpg' : 'webp'}`;
   };
@@ -239,7 +240,7 @@
       return;
     }
     const issue = byId.get(r.id);
-    if (!issue) { location.replace('#'); return; }
+    if (!issue || (state.issue !== issue && notHere(issue))) { location.replace('#'); return; }
     showView('book');
     if (!state.flip || state.issue !== issue) {
       // číslo se otevírá zavřené, odkaz do lupy otevře rovnou stránku
@@ -435,6 +436,7 @@
         <span class="issue-info"><b></b><span></span><em></em></span>
         <span class="issue-bar"><i></i></span>
         <span class="issue-done" title="Přečteno"><svg><use href="#i-check"/></svg></span>
+        <span class="issue-saved" title="Uloženo v telefonu"><svg><use href="#i-phone"/></svg></span>
       </div><span class="issue-tag"></span><span class="issue-cap"><b></b><span></span></span>`;
     const img = a.querySelector('img');
     img.addEventListener('load', () => img.classList.add('ok'));
@@ -496,6 +498,8 @@
     a.classList.toggle('is-reading', st === 'reading');
     a.classList.toggle('is-done', st === 'done');
     a.classList.toggle('is-last', store.get('excal.last', null) === issue.id);
+    a.classList.toggle('is-saved', offline.saved.has(issue.id));
+    a.classList.toggle('is-away', offline.away && !offline.saved.has(issue.id));
     a.querySelector('.issue-bar i').style.width = st === 'reading' ? `${Math.round(((p.page + 1) / n) * 100)}%` : '0';
     a.querySelector('.issue-info b').textContent = issue.date ? issue.date + (issue.yearApprox ? '?' : '') : issue.title;
     a.querySelector('.issue-info span').textContent = `${n} ${plural(n, 'strana', 'strany', 'stran')}`;
@@ -509,13 +513,15 @@
     if (!manifest) return;
     const issues = shelfIssues();
     issues.forEach(updateCell);
-    const counts = { all: 0, reading: 0, unread: 0, done: 0, bookmarks: bookmarkItems().length };
-    issues.forEach((is) => { counts.all++; counts[statusOf(is)]++; });
+    const counts = { all: 0, reading: 0, unread: 0, done: 0, bookmarks: bookmarkItems().length, saved: 0 };
+    issues.forEach((is) => { counts.all++; counts[statusOf(is)]++; if (offline.saved.has(is.id)) counts.saved++; });
     if (settings.filter === 'bookmarks' && !counts.bookmarks) settings.filter = 'all';
+    if (settings.filter === 'saved' && !counts.saved) settings.filter = 'all';
     el.filterSeg.querySelectorAll('button').forEach((b) => {
       b.classList.toggle('on', b.dataset.filter === settings.filter);
       b.querySelector('.count').textContent = counts[b.dataset.filter];
       if (b.dataset.filter === 'bookmarks') b.hidden = !counts.bookmarks;
+      if (b.dataset.filter === 'saved') b.hidden = !counts.saved;
     });
     renderHero();
     applyFilter();
@@ -525,7 +531,7 @@
   // rozečtené číslo v hlavičce, jinak tipy na klávesy
   function renderHero() {
     const reading = manifest.issues
-      .filter((is) => statusOf(is) === 'reading')
+      .filter((is) => statusOf(is) === 'reading' && (!offline.away || offline.saved.has(is.id)))
       .sort((a, b) => progress[b.id].t - progress[a.id].t);
     el.hero.textContent = '';
     if (!reading.length) {
@@ -584,7 +590,8 @@
   function matches(issue) {
     const st = statusOf(issue);
     if (settings.filter === 'bookmarks') return false; // místo obálek se ukážou záložky
-    if (settings.filter !== 'all' && st !== settings.filter) return false;
+    if (settings.filter === 'saved') { if (!offline.saved.has(issue.id)) return false; }
+    else if (settings.filter !== 'all' && st !== settings.filter) return false;
     const q = norm(shelf.query).trim();
     if (!q) return true;
     return q.split(/\s+/).every((tok) => {
@@ -707,6 +714,7 @@
 
   let pendingResume = null; // Pokračovat z hlavičky: otevřít rovnou na rozečtené straně
   function openIssue(issue, fromEl, opts) {
+    if (notHere(issue)) return;
     pendingResume = opts && opts.resume ? issue.id : null;
     const img = fromEl && fromEl.querySelector('img');
     if (img && img.complete && img.naturalWidth) {
@@ -997,8 +1005,7 @@
             ? `<button class="btn btn-accent" data-act="resume">Pokračovat na str. ${resume + 1}<svg><use href="#i-next"/></svg></button>
                <button class="btn btn-ghost" data-act="open">Od začátku</button>`
             : `<button class="btn btn-accent" data-act="open">Otevřít časopis<svg><use href="#i-next"/></svg></button>`}
-          <a class="btn trip-btn" href="api/cbz?id=${encodeURIComponent(issue.id)}" download data-trip
-            title="Stáhne číslo jako soubor CBZ, který přečteš v telefonu i bez internetu"><svg><use href="#i-download"/></svg>Na cestu<small>asi ${Math.max(1, Math.round(n * 0.42))} MB</small></a>
+          <span class="trip">${tripHtml(issue)}</span>
         </div>
         <div class="intro-hint">nebo klikni na obálku · <kbd>→</kbd></div>
         <nav class="intro-nav">
@@ -1021,6 +1028,9 @@
     }
     const b = e.target.closest('button');
     if (!b) return;
+    if (b.hasAttribute('data-save')) return saveIssue(state.issue);
+    if (b.hasAttribute('data-unsave')) return removeIssue(state.issue);
+    if (b.hasAttribute('data-install')) return install();
     if (b.dataset.act === 'resume') { const p = progress[state.issue.id]; openAt(p ? p.page : 1); }
     else if (b.dataset.act === 'open') flipNext();
     else if (b.dataset.go) { const is = byId.get(b.dataset.go); if (is) location.replace('#' + is.id); }
@@ -2114,14 +2124,14 @@
 
   const bmIndex = (id, page) => bookmarks.items.findIndex((b) => b.id === id && b.page === page);
 
-  function toast(text) {
+  function toast(text, ms = 2200) {
     el.toast.textContent = text;
     el.toast.hidden = false;
     el.toast.classList.remove('fade');
     clearTimeout(toast.t1);
     clearTimeout(toast.t2);
-    toast.t1 = setTimeout(() => el.toast.classList.add('fade'), 2200);
-    toast.t2 = setTimeout(() => { el.toast.hidden = true; }, 2700);
+    toast.t1 = setTimeout(() => el.toast.classList.add('fade'), ms);
+    toast.t2 = setTimeout(() => { el.toast.hidden = true; }, ms + 500);
   }
 
   // stránka, ke které se záložka vztahuje: v lupě ta uprostřed obrazovky, v listování levá
@@ -2663,6 +2673,189 @@
     }
   });
 
+  // --- offline: čtečka a vybraná čísla uložená v telefonu (sw.js), čte se z nich i bez sítě
+  const PC = ['127.0.0.1', 'localhost', '[::1]'].includes(location.hostname) && !store.get('excal.swtest', false);
+  const offline = {
+    phone: !PC && !FROM_FILE, // na počítači s čtečkou to nedává smysl
+    can: false, // prohlížeč smí ukládat (zabezpečená adresa)
+    away: false, // čtečka na počítači neodpovídá, čte se z telefonu
+    saved: new Set(), queue: [], busy: null, sizes: new Map(),
+  };
+  offline.can = offline.phone && 'serviceWorker' in navigator && 'caches' in window && window.isSecureContext;
+  const okUrl = (id) => `data/issues/${encodeURIComponent(id)}/.saved`;
+  const standalone = () => matchMedia('(display-mode: standalone)').matches;
+  let installEvt = null;
+  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installEvt = e; renderTrip(); });
+
+  async function loadSaved() {
+    for (const k of await caches.keys()) {
+      if (!k.startsWith('issue:')) continue;
+      const id = k.slice(6);
+      if (await (await caches.open(k)).match(okUrl(id))) offline.saved.add(id);
+      else await caches.delete(k); // nedokončené uložení
+    }
+  }
+
+  function tripHtml(issue) {
+    if (!offline.phone) {
+      const n = issue.pages.length;
+      return `<a class="btn trip-btn" href="api/cbz?id=${encodeURIComponent(issue.id)}" download data-trip
+        title="Stáhne číslo jako soubor CBZ, který přečteš v telefonu i bez internetu"><svg><use href="#i-download"/></svg>Na cestu<small>asi ${Math.max(1, Math.round(n * 0.42))} MB</small></a>`;
+    }
+    if (offline.saved.has(issue.id)) {
+      return `<span class="trip-saved"><svg><use href="#i-check"/></svg>V telefonu</span>` +
+        (installEvt && !standalone() ? '<button class="btn trip-btn" type="button" data-install><svg><use href="#i-phone"/></svg>Přidat na plochu</button>' : '') +
+        '<button class="link-btn trip-del" type="button" data-unsave>smazat z telefonu</button>';
+    }
+    const b = offline.busy;
+    if (b && b.id === issue.id) {
+      return `<button class="btn trip-btn" type="button" disabled>Ukládám<small>${b.total ? Math.floor((b.done / b.total) * 100) : 0} %</small></button>`;
+    }
+    if (offline.queue.includes(issue.id)) return '<button class="btn trip-btn" type="button" disabled>Čeká na uložení</button>';
+    if (offline.away) return '';
+    const mb = offline.sizes.get(issue.id);
+    if (mb == null && offline.can) fetchSize(issue);
+    return `<button class="btn trip-btn" type="button" data-save title="Uloží číslo do telefonu, přečteš ho i bez internetu">` +
+      `<svg><use href="#i-download"/></svg>Uložit do telefonu${mb ? `<small>${mb} MB</small>` : ''}</button>`;
+  }
+  function renderTrip() {
+    const box = state.issue && el.intro.querySelector('.trip');
+    if (box) box.innerHTML = tripHtml(state.issue);
+  }
+  function fetchSize(issue) {
+    offline.sizes.set(issue.id, 0);
+    fetch('api/size?id=' + encodeURIComponent(issue.id)).then((r) => r.json()).then((res) => {
+      offline.sizes.set(issue.id, Math.max(1, Math.round(res.bytes / 1e6)));
+      if (state.issue === issue) renderTrip();
+    }).catch(() => {});
+  }
+
+  function notHere(issue) {
+    if (!offline.away || offline.saved.has(issue.id)) return false;
+    toast('Tohle číslo v telefonu uložené není. Ulož si ho doma, až poběží čtečka na počítači.', 3500);
+    return true;
+  }
+
+  function saveIssue(issue) {
+    if (!offline.can) { showSaveHelp(true); return; }
+    if (offline.saved.has(issue.id) || offline.queue.includes(issue.id)) return;
+    offline.queue.push(issue.id);
+    renderTrip();
+    if (!offline.busy) pumpSaves();
+  }
+  async function pumpSaves() {
+    while (offline.queue.length) {
+      const issue = byId.get(offline.queue[0]);
+      offline.busy = { id: issue.id, done: 0, total: 0 };
+      renderTrip();
+      try {
+        await storeIssue(issue);
+        offline.saved.add(issue.id);
+        toast(`${issue.title} je v telefonu. Přečteš ho i bez internetu` +
+          (standalone() ? '.' : ', Časopisárnu spustíš ikonou na ploše (v menu Chrome ⋮ Přidat na plochu).'), 5000);
+      } catch (e) {
+        await caches.delete('issue:' + issue.id).catch(() => {});
+        toast(`${issue.title} se nepodařilo uložit. ` +
+          (e && e.name === 'QuotaExceededError' ? 'V telefonu už není místo.' : 'Zkus to znovu, až poběží čtečka na počítači.'), 4500);
+      }
+      offline.queue.shift();
+      offline.busy = null;
+      renderTrip();
+      refreshShelf();
+    }
+  }
+  async function storeIssue(issue) {
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+    await saveShell();
+    const urls = [];
+    issue.pages.forEach((p) => urls.push(imgUrl(issue, p, 'view'), imgUrl(issue, p, 'thumb')));
+    const cache = await caches.open('issue:' + issue.id);
+    offline.busy.total = urls.length;
+    await pool(urls, 4, async (u) => {
+      const r = await fetch(u);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      await cache.put(u, r);
+      offline.busy.done++;
+      renderTrip();
+    });
+    await cache.put(okUrl(issue.id), new Response('1'));
+  }
+  async function pool(list, n, fn) {
+    let i = 0;
+    await Promise.all(Array.from({ length: n }, async () => { while (i < list.length) await fn(list[i++]); }));
+  }
+
+  // čtečka sama (stránka, skripty, styly, písma, ikony) a obálky všech čísel na poličku
+  function shellUrls() {
+    const urls = new Set(['./', 'manifest.webmanifest', 'data/manifest.json', 'app/icon-192.png', 'app/icon-512.png', 'app/icon-maskable.png']);
+    document.querySelectorAll('script[src]').forEach((s) => urls.add(s.src));
+    const walk = (sheets) => {
+      for (const sh of sheets) {
+        if (sh.href) urls.add(sh.href);
+        let rules = [];
+        try { rules = sh.cssRules; } catch (e) { /* cizí styl */ }
+        for (const r of rules) {
+          if (r.styleSheet) walk([r.styleSheet]);
+          else if (r.type === CSSRule.FONT_FACE_RULE) {
+            for (const m of r.style.getPropertyValue('src').matchAll(/url\(["']?([^"')]+)["']?\)/g)) urls.add(new URL(m[1], sh.href || location.href).href);
+          }
+        }
+      }
+    };
+    walk(document.styleSheets);
+    if (BRAND.logo) urls.add(BRAND.logo);
+    return [...urls].map((u) => new URL(u, location.href).href).filter((u) => new URL(u).origin === location.origin);
+  }
+  async function saveShell() {
+    const shellCache = await caches.open('shell');
+    await pool(shellUrls(), 4, (u) => fetch(u, { cache: 'no-cache' }).then((r) => (r.ok ? shellCache.put(u, r) : null)).catch(() => {}));
+    const covers = await caches.open('covers');
+    const have = new Set((await covers.keys()).map((r) => r.url));
+    const missing = manifest.issues.map((is) => new URL(coverUrl(is), location.href).href).filter((u) => !have.has(u));
+    await pool(missing, 6, (u) => fetch(u).then((r) => (r.ok ? covers.put(u, r) : null)).catch(() => {}));
+  }
+
+  async function removeIssue(issue) {
+    await caches.delete('issue:' + issue.id);
+    offline.saved.delete(issue.id);
+    renderTrip();
+    refreshShelf();
+    toast(`${issue.title} je smazaný z telefonu.`);
+  }
+  function install() {
+    if (!installEvt) return;
+    installEvt.prompt();
+    installEvt.userChoice.finally(() => { installEvt = null; renderTrip(); });
+  }
+
+  // Chrome ukládá jen na zabezpečené adrese: čtečce z domácí sítě se to povolí jednou v chrome://flags
+  const saveHelp = $('#save-help');
+  function showSaveHelp(on) {
+    saveHelp.querySelector('[data-copy="origin"] code').textContent = location.origin;
+    saveHelp.hidden = !on;
+  }
+  function copyText(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    Object.assign(ta.style, { position: 'fixed', top: '0', opacity: '0' });
+    document.body.appendChild(ta);
+    ta.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { /* nejde */ }
+    ta.remove();
+    return ok;
+  }
+  saveHelp.addEventListener('click', (e) => {
+    const c = e.target.closest('[data-copy]');
+    if (c) {
+      const text = c.dataset.copy === 'flags' ? 'chrome://flags/#unsafely-treat-insecure-origin-as-secure' : location.origin;
+      toast(copyText(text) ? 'Zkopírováno, teď to vlož.' : `Opiš si: ${text}`, 3000);
+      return;
+    }
+    if (e.target === saveHelp || e.target.closest('[data-save-help-close]')) showSaveHelp(false);
+  });
+
   // --- start
   applyBrand();
   applyTheme(currentTheme());
@@ -2674,11 +2867,20 @@
     ping.src = 'http://127.0.0.1:8642/app/brand/brand.js?ping=' + Date.now();
     document.head.appendChild(ping);
   } else {
-    Promise.all([loadManifest(), getStatus(), getReader()]).then(([m, st, rd]) => {
+    if (offline.can) navigator.serviceWorker.register('sw.js').catch(() => {});
+    const saved = offline.can ? loadSaved().catch(() => {}) : null;
+    Promise.all([loadManifest(), getStatus(), getReader(), saved]).then(([m, st, rd]) => {
       mergeReader(rd);
       lib.status = st;
       lib.running = !!(st && st.running);
       if (st) el.libBtn.hidden = el.phoneBtn.hidden = !st.can_pick;
+      // manifest je, ale čtečka na počítači neodpovídá: čte se z telefonu
+      offline.away = offline.can && !!m && !st;
+      if (offline.away) {
+        if (offline.saved.size) settings.filter = 'saved';
+        toast(offline.saved.size ? 'Jsi bez spojení s počítačem, čteš čísla uložená v telefonu.'
+          : 'Jsi bez spojení s počítačem a v telefonu zatím nic uloženého nemáš.', 4000);
+      }
       if (m && m.issues && m.issues.length) useManifest(m);
       else showWelcome(true);
       renderProgress();

@@ -6,6 +6,8 @@
 <meta name="theme-color" content="#0e0b09">
 <title>Časopisárna</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='5' fill='%23e8322a'/%3E%3Cg font-family='Impact,Arial Black,sans-serif' font-size='25' text-anchor='middle'%3E%3Ctext x='17.5' y='29' fill='%23000'%3E%C4%8C%3C/text%3E%3Ctext x='16' y='27.5' fill='%23ffd23f'%3E%C4%8C%3C/text%3E%3C/g%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="app/icon-192.png">
 <link rel="stylesheet" href="app/style.css">
 <script>
   // značka: app/brand/, nebo brands/<název>/ při ?brand=<název>
@@ -85,9 +87,10 @@
           <li>Namiř na kód foťák telefonu a otevři odkaz.
             <div class="phone-qr" id="phone-qr"></div>
             <code class="phone-url" id="phone-url"></code></li>
-          <li>V telefonu otevři číslo a klepni na <b>Na cestu</b>. Stáhne se do telefonu a přečteš ho i bez internetu v aplikaci na komiksy, třeba <b>Librera</b> z Obchodu Play.</li>
+          <li>V telefonu otevři číslo a klepni na <b>Uložit do telefonu</b>. Poprvé tě čtečka provede jedním nastavením v Chrome.</li>
+          <li>V menu Chrome <b>⋮</b> dej <b>Přidat na plochu</b>. Časopisárnu pak spustíš z ikony i bez internetu, třeba v letadle.</li>
         </ol>
-        <p class="popover-note" id="phone-note">Kdyby se Windows ptaly, jestli Pythonu povolit síť, povol soukromé sítě. Počítač musí běžet jen při stahování.</p>
+        <p class="popover-note" id="phone-note">Kdyby se Windows ptaly, jestli Pythonu povolit síť, povol soukromé sítě. Počítač musí běžet jen při ukládání.</p>
       </div>
     </header>
     <div id="lib-progress" class="lib-progress" aria-live="polite" hidden></div>
@@ -99,6 +102,7 @@
         <button data-filter="unread">Nepřečtené <span class="count"></span></button>
         <button data-filter="done">Přečtené <span class="count"></span></button>
         <button data-filter="bookmarks" hidden>Záložky <span class="count"></span></button>
+        <button data-filter="saved" hidden>V telefonu <span class="count"></span></button>
       </div>
       <div class="year-chips" id="year-chips"></div>
       <div class="toolbar-right">
@@ -168,6 +172,21 @@
             <span>Na poličce napiš do hledání slovo a najdu ho v textu všech časopisů.</span></div></li>
         </ul>
         <button class="btn btn-accent" type="button" data-help-close>Rozumím, jdu číst</button>
+      </div>
+    </div>
+    <div id="save-help" class="help" hidden>
+      <div class="help-card" role="dialog" aria-label="Povolit ukládání do telefonu">
+        <h2>Jednou povolit ukládání</h2>
+        <p class="help-lead">Chrome dovolí uložit čísla do telefonu jen stránce, které věří. Čtečce z domácí sítě to povolíš jednou a pak už jen ukládáš.</p>
+        <ol class="save-steps">
+          <li>Zkopíruj adresu nastavení, otevři novou kartu Chrome a vlož ji do adresního řádku.
+            <button class="btn btn-ghost" type="button" data-copy="flags">Kopírovat adresu nastavení</button></li>
+          <li>Do pole pod <b>Insecure origins treated as secure</b> vlož adresu čtečky.
+            <button class="btn btn-ghost" type="button" data-copy="origin">Kopírovat <code></code></button></li>
+          <li>Vedle přepni na <b>Enabled</b> a dole klepni na <b>Relaunch</b>.</li>
+          <li>Vrať se sem a klepni znovu na <b>Uložit do telefonu</b>.</li>
+        </ol>
+        <button class="btn btn-accent" type="button" data-save-help-close>Rozumím</button>
       </div>
     </div>
   </main>

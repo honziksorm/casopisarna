@@ -53,6 +53,13 @@ d.rectangle(k(52, 432, 70, 450), fill=(10, 10, 14, 255))
 
 img = img.resize((512, 512), Image.LANCZOS)
 img.save(sys.argv[1], sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)])
+# ikony aplikace v telefonu; "maskable" má okraj, Android ji ořízne do kruhu nebo čtverce
+out = Path(sys.argv[1]).parent
+img.resize((192, 192), Image.LANCZOS).save(out / "icon-192.png", optimize=True)
+img.save(out / "icon-512.png", optimize=True)
+mask = Image.new("RGBA", (512, 512), (14, 11, 9, 255))
+mask.alpha_composite(img.resize((340, 340), Image.LANCZOS), (86, 86))
+mask.save(out / "icon-maskable.png", optimize=True)
 if len(sys.argv) > 2:  # náhled ve více velikostech
     sheet = Image.new("RGBA", (256 + 128 + 64 + 48 + 32 + 16 + 60, 256), (40, 40, 44, 255))
     x = 0

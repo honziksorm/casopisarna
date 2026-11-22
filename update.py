@@ -23,7 +23,7 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 PKG = os.path.dirname(ROOT) if os.path.basename(ROOT) == "program" else ROOT
 REPO = "honziksorm/casopisarna"
 API = f"https://api.github.com/repos/{REPO}/releases/latest"
-APP_FILES = ["index.html", "convert.py", "server.py", "update.py", "VERSION", "requirements.txt"]
+APP_FILES = ["index.html", "sw.js", "manifest.webmanifest", "convert.py", "server.py", "update.py", "VERSION", "requirements.txt"]
 KEEP = {"config.json"}  # z balicek/program/ se nepřepisuje
 OLD_DEFAULT_BRANDS = {"Knihovnička"}  # výchozí značka starších verzí se vymění, vlastní značka zůstane
 OBSOLETE = ["1 Převést časopisy.bat", "2 Spustit čtečku.bat", "3 Aktualizovat.bat"]

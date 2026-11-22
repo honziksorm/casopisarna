@@ -461,6 +461,21 @@ def write_cbz(tmp, src, issue, series):
         z.writestr("ComicInfo.xml", comic_info(issue, series))
 
 
+def saved_size(iid):
+    """Kolik místa zabere číslo uložené v telefonu (stránky na listování a náhledy)."""
+    with open(os.path.join(DATA, "manifest.json"), encoding="utf-8") as f:
+        issue = next((i for i in json.load(f)["issues"] if i["id"] == iid), None)
+    if not issue:
+        return 0
+    src = os.path.join(DATA, "issues", iid)
+    total = 0
+    for p in issue["pages"]:
+        for path in (os.path.join(src, "full", p["f"] + ".jpg") if p.get("nv") else os.path.join(src, "view", p["f"] + ".webp"),
+                     os.path.join(src, "thumb", p["f"] + ".webp")):
+            total += os.path.getsize(path) if os.path.exists(path) else 0
+    return total
+
+
 def start_lan():
     """Zpřístupní čtečku v domácí síti za běhu (druhý server na adrese počítače)."""
     if LAN["url"]:
@@ -489,6 +504,9 @@ class Handler(SimpleHTTPRequestHandler):
         ".jpg": "image/jpeg",
         ".svg": "image/svg+xml",
         ".woff2": "font/woff2",
+        ".png": "image/png",
+        ".ico": "image/x-icon",
+        ".webmanifest": "application/manifest+json",
     }
 
     def local(self):
@@ -541,6 +559,8 @@ class Handler(SimpleHTTPRequestHandler):
             if url.path == "/api/cbz":
                 path, name = trip_cbz(qs.get("id", ""))
                 return self.send_download(path, name + ".cbz") if path else self.send_error(404)
+            if url.path == "/api/size":
+                return self.send_json({"bytes": saved_size(qs.get("id", ""))})
         except Exception as e:
             return self.send_json({"error": str(e)}, 500)
         return super().do_GET()
