@@ -7,6 +7,11 @@ Pamatuje si rozečtené stránky. Běží jen lokálně v prohlížeči, nic se 
 Hledání najde i slovo v textu všech časopisů (u skenů s textovou vrstvou) a v lupě ho zvýrazní.
 Stránky jde zakládat záložkou, rozečtení i záložky si pamatuje čtečka, takže platí i na tabletu.
 
+Do telefonu: ikona telefonu vpravo nahoře ukáže QR kód. Telefon v téže Wi-Fi si čtečku nainstaluje
+jako aplikaci a vybraná čísla do ní uloží, takže se dají číst i bez internetu, třeba v letadle.
+V domácí síti běží čtečka přes HTTPS se jménem od [local-ip.sh](https://local-ip.sh) (veřejné DNS
+pro adresy v síti a certifikát k nim). Skeny zůstávají jen v domácí síti.
+
 Repozitář neobsahuje žádné skeny. Excalibur a další české časopisy naskenovala
 Herní historie, z. s. ([herniarchiv.cz](https://www.herniarchiv.cz)), Score je na archive.org.
 

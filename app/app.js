@@ -2713,10 +2713,15 @@
   function renderInstall() {
     installBar.hidden = !offline.phone || offline.away || standalone() || store.get('excal.noinstall', false);
   }
-  $('#btn-install').addEventListener('click', () => {
-    if (installEvt) return install();
+  $('#btn-install').addEventListener('click', async (e) => {
     if (!offline.can) return showSaveHelp(true);
-    toast('V menu Chrome ⋮ klepni na Přidat na plochu a pak na Instalovat.', 5000);
+    if (!installEvt) { // prohlížeč nabídku instalace pošle až chvíli po načtení
+      e.currentTarget.disabled = true;
+      for (let i = 0; i < 30 && !installEvt; i++) await new Promise((r) => setTimeout(r, 100));
+      $('#btn-install').disabled = false;
+    }
+    if (installEvt) return install();
+    toast('V menu prohlížeče ⋮ klepni na Přidat na plochu a pak na Instalovat.', 6000);
   });
   $('#btn-install-x').addEventListener('click', () => { store.set('excal.noinstall', true); renderInstall(); });
 
@@ -2868,7 +2873,7 @@
   const IS_CHROME = /Chrome\/\d/.test(navigator.userAgent) &&
     !/SamsungBrowser|EdgA|Edg\/|OPR|YaBrowser|Firefox|DuckDuckGo|MiuiBrowser|HuaweiBrowser|UCBrowser|; wv\)/.test(navigator.userAgent);
   function showSaveHelp(on) {
-    saveHelp.querySelectorAll('[data-copy="origin"] code').forEach((c) => { c.textContent = location.origin; });
+    saveHelp.querySelectorAll('[data-copy="origin"] code, .save-origin').forEach((c) => { c.textContent = location.origin; });
     saveHelp.querySelector('[data-open-chrome]').href = `intent://${location.host}/#Intent;scheme=http;package=com.android.chrome;end`;
     saveHelp.classList.toggle('is-other', !IS_CHROME);
     saveHelp.hidden = !on;

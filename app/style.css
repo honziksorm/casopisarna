@@ -717,6 +717,8 @@ kbd {
 .help-card .save-steps b { display: inline; margin: 0; font-size: inherit; color: var(--ink); }
 .help-card .save-steps .btn { display: flex; width: auto; margin-top: 6px; padding: 8px 12px; font-size: 13px; }
 .save-steps code { font: 400 15px/1 var(--pixel); color: var(--hi); margin-left: 6px; word-break: break-all; }
+.save-steps .save-origin { display: block; margin: 8px 0 0; padding: 8px 10px; font-size: 23px; letter-spacing: .02em;
+  background: rgba(0, 0, 0, .35); border: 1px dashed var(--line-2); border-radius: 6px; user-select: all; }
 
 /* čtení v telefonu: kroky a QR kód */
 .phone-pop { width: 330px; }

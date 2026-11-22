@@ -87,8 +87,8 @@
           <li>Namiř na kód foťák telefonu a otevři odkaz.
             <div class="phone-qr" id="phone-qr"></div>
             <code class="phone-url" id="phone-url"></code></li>
-          <li>V telefonu otevři číslo a klepni na <b>Uložit do telefonu</b>. Poprvé tě čtečka provede jedním nastavením v Chrome.</li>
-          <li>V menu Chrome <b>⋮</b> dej <b>Přidat na plochu</b>. Časopisárnu pak spustíš z ikony i bez internetu, třeba v letadle.</li>
+          <li>Nahoře na poličce klepni na <b>Nainstalovat do telefonu</b> a potvrď.</li>
+          <li>U čísel, která chceš mít s sebou, dej <b>Uložit do telefonu</b>. Časopisárnu pak spustíš z ikony i bez internetu, třeba v letadle.</li>
         </ol>
         <p class="popover-note" id="phone-note">Kdyby se Windows ptaly, jestli Pythonu povolit síť, povol soukromé sítě. Počítač musí běžet jen při ukládání.</p>
       </div>
@@ -260,12 +260,12 @@
     <h2>Jednou povolit ukládání</h2>
     <p class="help-lead">Chrome dovolí uložit čísla do telefonu jen stránce, které věří. Čtečce z domácí sítě to povolíš jednou a pak už jen ukládáš.</p>
     <ol class="save-steps">
-      <li>Zkopíruj adresu nastavení, otevři novou kartu Chrome a vlož ji nahoru do adresního řádku.
+      <li>Klepni na <b>Kopírovat adresu nastavení</b>, vlož ji nahoru do adresního řádku Chrome a potvrď. Čtečka zatím zmizí, to nevadí.
         <button class="btn btn-ghost" type="button" data-copy="flags">Kopírovat adresu nastavení</button></li>
-      <li>Do pole pod <b>Insecure origins treated as secure</b> vlož adresu čtečky.
-        <button class="btn btn-ghost" type="button" data-copy="origin">Kopírovat <code></code></button></li>
-      <li>Vedle přepni na <b>Enabled</b> a dole klepni na <b>Relaunch</b>.</li>
-      <li>Vrať se do čtečky a klepni na tlačítko znovu.</li>
+      <li>Na stránce s nastavením napiš nahoru do hledání <b>insecure</b>. U položky <b>Insecure origins treated as secure</b> klepni do pole pod popisem a napiš adresu čtečky:
+        <code class="save-origin"></code></li>
+      <li>Vedle přepni <b>Disabled</b> na <b>Enabled</b> a dole klepni na <b>Relaunch</b>.</li>
+      <li>Po restartu Chrome se šipkou Zpět vrať do čtečky a klepni na tlačítko znovu.</li>
     </ol>
     </div>
     <button class="btn btn-accent" type="button" data-save-help-close>Rozumím</button>

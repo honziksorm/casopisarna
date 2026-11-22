@@ -13,9 +13,11 @@ import os
 import re
 import shutil
 import socket
+import ssl
 import subprocess
 import sys
 import threading
+import time
 import unicodedata
 import urllib.request
 import zipfile
@@ -476,19 +478,60 @@ def saved_size(iid):
     return total
 
 
+# HTTPS v domácí síti: local-ip.sh překládá 192-168-5-163.local-ip.sh na 192.168.5.163 a dává k tomu
+# veřejný certifikát. Telefon pak čtečku bere jako zabezpečený web: jde nainstalovat a číst bez sítě.
+TLS_DOMAIN = "local-ip.sh"
+TLS_FILES = {"server.pem": "https://local-ip.sh/server.pem", "server.key": "https://local-ip.sh/server.key"}
+
+
+def tls_files():
+    d = os.path.join(DATA, "tls")
+    crt, key = os.path.join(d, "server.pem"), os.path.join(d, "server.key")
+    if not os.path.exists(crt) or time.time() - os.path.getmtime(crt) > 7 * 86400:  # obnovuje se po 90 dnech
+        try:
+            os.makedirs(d, exist_ok=True)
+            got = {}
+            for name, url in TLS_FILES.items():
+                with urllib.request.urlopen(url, timeout=10) as r:
+                    got[name] = r.read(100_000)
+            for name, body in got.items():
+                with open(os.path.join(d, name), "wb") as f:
+                    f.write(body)
+        except OSError:
+            pass  # bez internetu zůstane předchozí certifikát
+    try:
+        exp = ssl.cert_time_to_seconds(ssl._ssl._test_decode_cert(crt)["notAfter"])
+        return (crt, key) if exp > time.time() + 3600 else None
+    except (OSError, ValueError, KeyError):
+        return None
+
+
+class LanServer(ThreadingHTTPServer):
+    def handle_error(self, request, client_address):
+        if not isinstance(sys.exc_info()[1], (ssl.SSLError, ConnectionError, TimeoutError)):
+            super().handle_error(request, client_address)
+
+
 def start_lan():
-    """Zpřístupní čtečku v domácí síti za běhu (druhý server na adrese počítače)."""
+    """Zpřístupní čtečku v domácí síti za běhu (druhý server na adrese počítače, když to jde, tak přes HTTPS)."""
     if LAN["url"]:
         return {"ok": True, "url": LAN["url"]}
     ip = lan_ip()
     if not ip:
         return {"ok": False, "error": "Počítač teď není připojený k žádné síti."}
     try:
-        srv = ThreadingHTTPServer((ip, PORT), partial(Handler, directory=ROOT))
+        srv = LanServer((ip, PORT), partial(Handler, directory=ROOT))
     except OSError as e:
         return {"ok": False, "error": f"Síť se nepodařilo zapnout: {e}"}
+    tls = tls_files()
+    if tls:
+        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        ctx.load_cert_chain(*tls)
+        srv.socket = ctx.wrap_socket(srv.socket, server_side=True, do_handshake_on_connect=False)
+        LAN["url"] = f"https://{ip.replace('.', '-')}.{TLS_DOMAIN}:{PORT}/"
+    else:
+        LAN["url"] = f"http://{ip}:{PORT}/"
     threading.Thread(target=srv.serve_forever, daemon=True).start()
-    LAN["url"] = f"http://{ip}:{PORT}/"
     print(f"Čtečka je teď i v domácí síti: {LAN['url']}")
     return {"ok": True, "url": LAN["url"]}
 
@@ -680,14 +723,12 @@ def main():
             webbrowser.open(url)
         return
 
-    host = "0.0.0.0" if args.lan else "127.0.0.1"
+    host = "127.0.0.1"  # domácí síť jde zvlášť přes start_lan (HTTPS)
     port = free_port(host, args.port)
     if port != args.port:
         print(f"Port {args.port} je obsazený, používám {port}. Rozečtené stránky se pamatují pro každý port zvlášť.")
     httpd = ThreadingHTTPServer((host, port), partial(Handler, directory=ROOT))
     PORT = port
-    if args.lan and lan_ip():
-        LAN["url"] = f"http://{lan_ip()}:{port}/"
     url = f"http://127.0.0.1:{port}/"
     name = app_name()
     if os.name == "nt":
@@ -697,8 +738,8 @@ def main():
         except Exception:
             pass
     print(f"{name} {version()} běží na {url}")
-    if args.lan and lan_ip():
-        print(f"V domácí síti: http://{lan_ip()}:{port}/")
+    if args.lan:
+        start_lan()
     print("Tohle okno nech otevřené, dokud čteš. Zavřením čtečku vypneš.\n")
     if has_library(cfg) and not args.no_convert:
         CONVERTER.start()

@@ -45,6 +45,14 @@ archivu). Kliknutím na nález se stránka otevře a slovo je zvýrazněné.
 Rozečtené stránky a záložky si pamatuje čtečka, ne prohlížeč. Platí
 proto i na tabletu v domácí síti a nezmizí s historií prohlížeče.
 
+Telefon a tablet
+----------------
+Klikněte vpravo nahoře na ikonu telefonu a namiřte na QR kód foťák
+telefonu (musí být na stejné Wi-Fi). Na poličce v telefonu klepněte na
+"Nainstalovat do telefonu". Čísla, která chcete mít s sebou, uložte
+u čísla tlačítkem "Uložit do telefonu", přečtete je i bez internetu.
+Počítač musí běžet jen při ukládání.
+
 Aktualizace
 -----------
 Dvakrát klikněte na "Aktualizovat". Stáhne nejnovější verzi z GitHubu
@@ -55,8 +63,9 @@ Pro pokročilé
 -------------
 Do složky "program" není potřeba chodit, je v ní čtečka sama, přenosný
 Python, převedené obrázky (složka "data") a nastavení (config.json).
-Tablet v domácí síti: spusťte "Spustit čtečku" z příkazové řádky
-s parametrem --lan a v tabletu otevřete adresu, kterou vypíše.
+Domácí síť hned po spuštění: "Spustit čtečku" z příkazové řádky
+s parametrem --lan. V síti čtečka běží přes HTTPS se jménem od služby
+local-ip.sh (veřejné DNS pro adresy v síti a certifikát k nim).
 
 Licence
 -------
