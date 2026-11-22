@@ -591,6 +591,9 @@ class Handler(SimpleHTTPRequestHandler):
         return super().send_head()
 
     def translate_path(self, path):
+        # service worker a manifest leží v app/ (aktualizace ji přenáší celou), prohlížeč je chce z kořene
+        if path.split("?", 1)[0].split("#", 1)[0] in ("/sw.js", "/manifest.webmanifest"):
+            path = "/app" + path
         # převedená data můžou ležet mimo složku čtečky ("output_dir" v config.json)
         full = super().translate_path(path)
         default = os.path.join(ROOT, "data")

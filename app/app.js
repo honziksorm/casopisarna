@@ -2739,6 +2739,7 @@
   function fetchSize(issue) {
     offline.sizes.set(issue.id, 0);
     fetch('api/size?id=' + encodeURIComponent(issue.id)).then((r) => r.json()).then((res) => {
+      if (!(res.bytes > 0)) return;
       offline.sizes.set(issue.id, Math.max(1, Math.round(res.bytes / 1e6)));
       if (state.issue === issue) renderTrip();
     }).catch(() => {});

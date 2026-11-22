@@ -95,10 +95,11 @@ def build(brand, with_python, make_zip):
     prog = out / "program"  # nahoře jen spouštěče a návod, všechno ostatní sem
     (prog / "app").mkdir(parents=True)
 
-    for name in ("index.html", "sw.js", "manifest.webmanifest", "convert.py", "server.py", "update.py", "VERSION", "requirements.txt"):
+    for name in ("index.html", "convert.py", "server.py", "update.py", "VERSION", "requirements.txt"):
         shutil.copy2(ROOT / name, prog / name)
-    for name in ("app.js", "style.css", "icon.ico"):
-        shutil.copy2(ROOT / "app" / name, prog / "app" / name)
+    for f in (ROOT / "app").iterdir():  # app.js, styl, ikony, service worker, manifest
+        if f.is_file():
+            shutil.copy2(f, prog / "app" / f.name)
     shutil.copytree(info["src"], prog / "app" / "brand")
     shutil.copytree(ROOT / "app" / "fonts", prog / "app" / "fonts")
     shutil.copytree(ROOT / "app" / "vendor", prog / "app" / "vendor")
