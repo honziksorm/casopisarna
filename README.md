@@ -9,6 +9,7 @@ Stránky jde zakládat záložkou, rozečtení i záložky si pamatuje čtečka,
 
 Do telefonu: ikona telefonu vpravo nahoře ukáže QR kód. Telefon v téže Wi-Fi si čtečku nainstaluje
 jako aplikaci a vybraná čísla do ní uloží, takže se dají číst i bez internetu, třeba v letadle.
+Síť pro telefon si čtečka pamatuje, aplikace v telefonu si doma sama stáhne novou verzi i rozečtení.
 V domácí síti běží čtečka přes HTTPS se jménem od [local-ip.sh](https://local-ip.sh) (veřejné DNS
 pro adresy v síti a certifikát k nim). Skeny zůstávají jen v domácí síti.
 

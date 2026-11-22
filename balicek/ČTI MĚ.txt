@@ -51,7 +51,9 @@ Klikněte vpravo nahoře na ikonu telefonu a namiřte na QR kód foťák
 telefonu (musí být na stejné Wi-Fi). Na poličce v telefonu klepněte na
 "Nainstalovat do telefonu". Čísla, která chcete mít s sebou, uložte
 u čísla tlačítkem "Uložit do telefonu", přečtete je i bez internetu.
-Počítač musí běžet jen při ukládání.
+Počítač musí běžet jen při ukládání. Síť pro telefon se pak zapíná
+sama a aplikace v telefonu si doma stáhne novou verzi i rozečtené
+stránky. Stránku zvětšíte roztažením dvěma prsty.
 
 Aktualizace
 -----------

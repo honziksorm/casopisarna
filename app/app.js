@@ -1332,6 +1332,59 @@
     location.hash = readerHash(state.issue.id, state.landscape ? 'spread' : 'page', vis[0]);
   }
 
+  // dva prsty v listování: roztažení otevře lupu na tom místě a gesto v ní plynule pokračuje
+  const bookPinch = { pts: new Map(), d0: 0, handed: false, multi: false };
+  el.holder.addEventListener('pointerdown', (e) => {
+    if (e.pointerType !== 'touch' || R.open) return;
+    bookPinch.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (bookPinch.pts.size === 2) {
+      const [a, b] = [...bookPinch.pts.values()];
+      bookPinch.d0 = Math.hypot(a.x - b.x, a.y - b.y) || 1;
+    }
+  }, true);
+  document.addEventListener('pointermove', (e) => {
+    const p = bookPinch.pts.get(e.pointerId);
+    if (!p) return;
+    p.x = e.clientX;
+    p.y = e.clientY;
+    if (bookPinch.pts.size !== 2) return;
+    const [a, b] = [...bookPinch.pts.values()];
+    const d = Math.hypot(a.x - b.x, a.y - b.y);
+    if (!bookPinch.handed) {
+      if (d / bookPinch.d0 < 1.08 || !state.flip) return;
+      bookPinch.handed = true;
+      zoomFromBook((a.x + b.x) / 2, (a.y + b.y) / 2, d / bookPinch.d0);
+    } else if (R.open && !R.pointers.size) {
+      // lupa už je otevřená: prsty převezme ona
+      stopMotion();
+      R.anchor = null;
+      for (const [id, q] of bookPinch.pts) {
+        try { el.stage.setPointerCapture(id); } catch (err) { /* prst už je dole */ }
+        R.pointers.set(id, { x: q.x, y: q.y });
+      }
+      R.pinch = { d: d || 1, s: R.cur.s, mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2, ox: R.cur.x, oy: R.cur.y };
+      R.drag = null;
+      R.tgt = { ...R.cur };
+      el.sheet.classList.add('moving');
+      bookPinch.pts.clear();
+    }
+  }, true);
+  const endBookPinch = (e) => {
+    bookPinch.pts.delete(e.pointerId);
+    if (!bookPinch.pts.size) bookPinch.handed = false;
+  };
+  document.addEventListener('pointerup', endBookPinch, true);
+  document.addEventListener('pointercancel', endBookPinch, true);
+  // druhý prst nesmí StPageFlip vzít jako tah za list
+  ['touchstart', 'touchmove', 'touchend', 'touchcancel'].forEach((t) => el.holder.addEventListener(t, (e) => {
+    if (e.touches.length > 1 && !bookPinch.multi) {
+      bookPinch.multi = true;
+      try { state.flip.ui.touchPoint = null; state.flip.userStop({ x: 0, y: 0 }, true); } catch (err) { /* jiná verze StPageFlip */ }
+    }
+    if (bookPinch.multi) e.stopPropagation();
+    if (!e.touches.length) bookPinch.multi = false;
+  }, { capture: true, passive: true }));
+
   // kolečko listuje, Ctrl + kolečko (štípnutí na touchpadu) otevře lupu
   let wheelAcc = 0;
   let wheelLock = 0;

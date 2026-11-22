@@ -621,7 +621,10 @@ class Handler(SimpleHTTPRequestHandler):
             if self.path == "/api/brand":
                 return self.send_json(install_brand(body.get("path"), bool(body.get("reset"))))
             if self.path == "/api/lan":
-                return self.send_json(start_lan())
+                res = start_lan()
+                if res.get("ok"):  # příště se síť zapne sama, telefon si pak stáhne novou verzi i rozečtení
+                    write_json(os.path.join(DATA, "lan.json"), {"on": True})
+                return self.send_json(res)
             self.send_json(make_shortcut() if self.path == "/api/shortcut" else add_library(body.get("mode", "folder"), body.get("paths")))
         except Exception as e:
             self.send_json({"ok": False, "error": f"Něco se nepovedlo: {e}"}, 500)
@@ -738,7 +741,7 @@ def main():
         except Exception:
             pass
     print(f"{name} {version()} běží na {url}")
-    if args.lan:
+    if args.lan or os.path.exists(os.path.join(DATA, "lan.json")):  # telefon už jednou připojený
         start_lan()
     print("Tohle okno nech otevřené, dokud čteš. Zavřením čtečku vypneš.\n")
     if has_library(cfg) and not args.no_convert:
