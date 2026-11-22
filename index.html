@@ -54,7 +54,7 @@
   <div class="shelf-inner">
     <header class="shelf-top">
       <div class="brand">
-        <div id="brand-mark"><span class="wordmark">Časopisárna</span></div>
+        <a id="brand-mark" class="brand-home" href="#" title="Na hlavní stránku"><span class="wordmark">Časopisárna</span></a>
         <span class="brand-sub" id="brand-tagline">Herní časopisy z vlastní sbírky</span>
         <span class="brand-sub" id="shelf-stats"></span>
       </div>
@@ -176,16 +176,25 @@
     </div>
     <div id="save-help" class="help" hidden>
       <div class="help-card" role="dialog" aria-label="Povolit ukládání do telefonu">
+        <div class="save-other">
+          <h2>Otevři čtečku v Chrome</h2>
+          <p class="help-lead">Do telefonu ukládá čtečka v prohlížeči <b>Chrome</b>. Teď je otevřená v jiném prohlížeči, nejspíš v Samsung Internetu, a ten to neumí.</p>
+          <a class="btn btn-accent save-chrome" data-open-chrome href="#">Otevřít čtečku v Chrome</a>
+          <p class="help-lead save-alt">Kdyby se Chrome neotevřel, zkopíruj adresu čtečky a vlož ji do Chrome nahoru do adresního řádku.
+            <button class="btn btn-ghost" type="button" data-copy="origin">Kopírovat <code></code></button></p>
+        </div>
+        <div class="save-chrome-steps">
         <h2>Jednou povolit ukládání</h2>
         <p class="help-lead">Chrome dovolí uložit čísla do telefonu jen stránce, které věří. Čtečce z domácí sítě to povolíš jednou a pak už jen ukládáš.</p>
         <ol class="save-steps">
-          <li>Zkopíruj adresu nastavení, otevři novou kartu Chrome a vlož ji do adresního řádku.
+          <li>Zkopíruj adresu nastavení, otevři novou kartu Chrome a vlož ji nahoru do adresního řádku.
             <button class="btn btn-ghost" type="button" data-copy="flags">Kopírovat adresu nastavení</button></li>
           <li>Do pole pod <b>Insecure origins treated as secure</b> vlož adresu čtečky.
             <button class="btn btn-ghost" type="button" data-copy="origin">Kopírovat <code></code></button></li>
           <li>Vedle přepni na <b>Enabled</b> a dole klepni na <b>Relaunch</b>.</li>
           <li>Vrať se sem a klepni znovu na <b>Uložit do telefonu</b>.</li>
         </ol>
+        </div>
         <button class="btn btn-accent" type="button" data-save-help-close>Rozumím</button>
       </div>
     </div>

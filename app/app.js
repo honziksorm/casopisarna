@@ -765,6 +765,20 @@
     }));
   }
 
+  // logo = hlavní stránka: polička od začátku, bez hledání a filtru
+  el.brandMark.addEventListener('click', (e) => {
+    e.preventDefault();
+    el.themePop.hidden = el.libPop.hidden = el.phonePop.hidden = true;
+    el.search.value = '';
+    shelf.query = '';
+    settings.filter = offline.away && offline.saved.size ? 'saved' : 'all';
+    saveSettings();
+    scheduleTextSearch();
+    if (location.hash.length > 1) location.hash = '';
+    else refreshShelf();
+    el.shelf.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
   // ovládání poličky
   el.filterSeg.addEventListener('click', (e) => {
     const b = e.target.closest('button[data-filter]');
@@ -2829,9 +2843,14 @@
   }
 
   // Chrome ukládá jen na zabezpečené adrese: čtečce z domácí sítě se to povolí jednou v chrome://flags
+  // jiný prohlížeč (Samsung Internet, QR kód z foťáku ho otevře sám) přepínač nemá: nejdřív otevřít v Chrome
   const saveHelp = $('#save-help');
+  const IS_CHROME = /Chrome\/\d/.test(navigator.userAgent) &&
+    !/SamsungBrowser|EdgA|Edg\/|OPR|YaBrowser|Firefox|DuckDuckGo|MiuiBrowser|HuaweiBrowser|UCBrowser|; wv\)/.test(navigator.userAgent);
   function showSaveHelp(on) {
-    saveHelp.querySelector('[data-copy="origin"] code').textContent = location.origin;
+    saveHelp.querySelectorAll('[data-copy="origin"] code').forEach((c) => { c.textContent = location.origin; });
+    saveHelp.querySelector('[data-open-chrome]').href = `intent://${location.host}/#Intent;scheme=http;package=com.android.chrome;end`;
+    saveHelp.classList.toggle('is-other', !IS_CHROME);
     saveHelp.hidden = !on;
   }
   function copyText(text) {
