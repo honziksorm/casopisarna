@@ -2897,7 +2897,7 @@
 
   // čtečka sama (stránka, skripty, styly, písma, ikony) a obálky všech čísel na poličku
   function shellUrls() {
-    const urls = new Set(['./', 'manifest.webmanifest', 'data/manifest.json', 'app/icon-192.png', 'app/icon-512.png', 'app/icon-maskable.png']);
+    const urls = new Set(['./', 'VERSION', 'manifest.webmanifest', 'data/manifest.json', 'app/icon-192.png', 'app/icon-512.png', 'app/icon-maskable.png']);
     document.querySelectorAll('script[src]').forEach((s) => urls.add(s.src));
     const walk = (sheets) => {
       for (const sh of sheets) {
@@ -2983,6 +2983,19 @@
     document.head.appendChild(ping);
   } else {
     if (offline.can) navigator.serviceWorker.register('sw.js').catch(() => {});
+    // verze v patičce poličky a v nabídce vzhledu (v telefonu z uložené kopie, i bez spojení)
+    fetch('VERSION', { cache: 'no-cache' }).then((r) => (r.ok ? r.text() : '')).then((v) => {
+      v = v.trim();
+      if (!/^\d+(\.\d+)*$/.test(v)) return;
+      const text = `${APP} ${v}`;
+      const ver = $('#app-version');
+      ver.textContent = text;
+      ver.hidden = false;
+      const foot = document.createElement('span');
+      foot.className = 'foot-ver';
+      foot.textContent = text;
+      el.foot.appendChild(foot);
+    }).catch(() => {});
     const saved = offline.can ? loadSaved().catch(() => {}) : null;
     Promise.all([loadManifest(), getStatus(), getReader(), saved]).then(([m, st, rd]) => {
       mergeReader(rd);
