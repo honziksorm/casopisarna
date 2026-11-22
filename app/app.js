@@ -2699,7 +2699,26 @@
   const okUrl = (id) => `data/issues/${encodeURIComponent(id)}/.saved`;
   const standalone = () => matchMedia('(display-mode: standalone)').matches;
   let installEvt = null;
-  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installEvt = e; renderTrip(); });
+  const installBar = $('#install-bar');
+  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installEvt = e; renderTrip(); renderInstall(); });
+  window.addEventListener('appinstalled', () => {
+    installEvt = null;
+    store.set('excal.noinstall', true);
+    renderInstall();
+    renderTrip();
+    toast('Hotovo, Časopisárna je na ploše. Čísla na cestu si ulož tlačítkem Uložit do telefonu u čísla.', 5000);
+  });
+
+  // pruh na poličce: nainstalovat, a když to Chrome ještě nedovolí, poradit proč
+  function renderInstall() {
+    installBar.hidden = !offline.phone || offline.away || standalone() || store.get('excal.noinstall', false);
+  }
+  $('#btn-install').addEventListener('click', () => {
+    if (installEvt) return install();
+    if (!offline.can) return showSaveHelp(true);
+    toast('V menu Chrome ⋮ klepni na Přidat na plochu a pak na Instalovat.', 5000);
+  });
+  $('#btn-install-x').addEventListener('click', () => { store.set('excal.noinstall', true); renderInstall(); });
 
   async function loadSaved() {
     for (const k of await caches.keys()) {
@@ -2767,7 +2786,7 @@
         await storeIssue(issue);
         offline.saved.add(issue.id);
         toast(`${issue.title} je v telefonu. Přečteš ho i bez internetu` +
-          (standalone() ? '.' : ', Časopisárnu spustíš ikonou na ploše (v menu Chrome ⋮ Přidat na plochu).'), 5000);
+          (standalone() ? '.' : ', když si Časopisárnu nainstaluješ tlačítkem nahoře na poličce.'), 5000);
       } catch (e) {
         await caches.delete('issue:' + issue.id).catch(() => {});
         toast(`${issue.title} se nepodařilo uložit. ` +
@@ -2896,6 +2915,7 @@
       if (st) el.libBtn.hidden = el.phoneBtn.hidden = !st.can_pick;
       // manifest je, ale čtečka na počítači neodpovídá: čte se z telefonu
       offline.away = offline.can && !!m && !st;
+      renderInstall();
       if (offline.away) {
         if (offline.saved.size) settings.filter = 'saved';
         toast(offline.saved.size ? 'Jsi bez spojení s počítačem, čteš čísla uložená v telefonu.'

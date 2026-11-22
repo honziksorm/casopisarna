@@ -692,7 +692,22 @@ kbd {
 /* povolení ukládání v Chrome */
 .help-lead { margin: -4px 0 14px; color: var(--ink-2); font-size: 13.5px; line-height: 1.45; }
 .save-steps { margin: 0 0 18px; padding: 0 0 0 20px; display: grid; gap: 11px; color: var(--ink-2); font-size: 13.5px; line-height: 1.45; }
+#save-help { position: fixed; z-index: 115; }
 #save-help .help-card { max-height: 100%; overflow: auto; }
+
+/* v telefonu: nainstalovat čtečku jako aplikaci */
+.install-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 14px; margin: 0 0 18px; padding: 12px 12px 12px 14px;
+  background: var(--panel); border: 1px solid var(--line-2); border-left: 4px solid var(--hi); border-radius: 10px; }
+.install-ico { width: 26px; height: 26px; flex: none; color: var(--hi); }
+.install-text { flex: 1 1 180px; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.install-text b { font: 400 20px/1 var(--display); color: var(--ink); text-transform: uppercase; letter-spacing: .02em; }
+.install-text em { font: 400 15px/1.1 var(--pixel); font-style: normal; color: var(--ink-3); text-transform: uppercase; letter-spacing: .03em; }
+#btn-install { padding: 10px 14px; font-size: 14px; }
+#btn-install svg { width: 16px; height: 16px; }
+@media (max-width: 700px) {
+  .install-x { order: 3; }
+  #btn-install { order: 4; flex: 1 1 100%; justify-content: center; }
+}
 #save-help .save-other, #save-help.is-other .save-chrome-steps { display: none; }
 #save-help.is-other .save-other { display: block; }
 .help-card .save-chrome { display: flex; margin-bottom: 14px; }

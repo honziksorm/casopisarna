@@ -94,6 +94,12 @@
       </div>
     </header>
     <div id="lib-progress" class="lib-progress" aria-live="polite" hidden></div>
+    <div id="install-bar" class="install-bar" hidden>
+      <svg class="install-ico"><use href="#i-phone"/></svg>
+      <span class="install-text"><b>Časopisárna jako aplikace</b><em>ikona na ploše a čtení i bez internetu</em></span>
+      <button class="btn btn-accent" type="button" id="btn-install"><svg><use href="#i-download"/></svg>Nainstalovat do telefonu</button>
+      <button class="icon-btn install-x" type="button" id="btn-install-x" title="Skrýt" aria-label="Skrýt"><svg><use href="#i-close"/></svg></button>
+    </div>
 
     <nav class="shelf-toolbar" id="shelf-toolbar" aria-label="Výběr čísel">
       <div class="seg" id="filter-seg" role="tablist">
@@ -174,30 +180,6 @@
         <button class="btn btn-accent" type="button" data-help-close>Rozumím, jdu číst</button>
       </div>
     </div>
-    <div id="save-help" class="help" hidden>
-      <div class="help-card" role="dialog" aria-label="Povolit ukládání do telefonu">
-        <div class="save-other">
-          <h2>Otevři čtečku v Chrome</h2>
-          <p class="help-lead">Do telefonu ukládá čtečka v prohlížeči <b>Chrome</b>. Teď je otevřená v jiném prohlížeči, nejspíš v Samsung Internetu, a ten to neumí.</p>
-          <a class="btn btn-accent save-chrome" data-open-chrome href="#">Otevřít čtečku v Chrome</a>
-          <p class="help-lead save-alt">Kdyby se Chrome neotevřel, zkopíruj adresu čtečky a vlož ji do Chrome nahoru do adresního řádku.
-            <button class="btn btn-ghost" type="button" data-copy="origin">Kopírovat <code></code></button></p>
-        </div>
-        <div class="save-chrome-steps">
-        <h2>Jednou povolit ukládání</h2>
-        <p class="help-lead">Chrome dovolí uložit čísla do telefonu jen stránce, které věří. Čtečce z domácí sítě to povolíš jednou a pak už jen ukládáš.</p>
-        <ol class="save-steps">
-          <li>Zkopíruj adresu nastavení, otevři novou kartu Chrome a vlož ji nahoru do adresního řádku.
-            <button class="btn btn-ghost" type="button" data-copy="flags">Kopírovat adresu nastavení</button></li>
-          <li>Do pole pod <b>Insecure origins treated as secure</b> vlož adresu čtečky.
-            <button class="btn btn-ghost" type="button" data-copy="origin">Kopírovat <code></code></button></li>
-          <li>Vedle přepni na <b>Enabled</b> a dole klepni na <b>Relaunch</b>.</li>
-          <li>Vrať se sem a klepni znovu na <b>Uložit do telefonu</b>.</li>
-        </ol>
-        </div>
-        <button class="btn btn-accent" type="button" data-save-help-close>Rozumím</button>
-      </div>
-    </div>
   </main>
   <footer class="bar bar-bottom">
     <input type="range" id="page-slider" class="page-slider" min="0" max="0" value="0" step="1" aria-label="Posun v čísle">
@@ -265,6 +247,30 @@
 
 <div id="zoom-note" class="zoom-note" hidden>Stránka je přiblížená prohlížečem – sevři dva prsty na touchpadu (nebo Ctrl + kolečko dolů), ať se vrátí.</div>
 
+<div id="save-help" class="help" hidden>
+  <div class="help-card" role="dialog" aria-label="Povolit ukládání do telefonu">
+    <div class="save-other">
+      <h2>Otevři čtečku v Chrome</h2>
+      <p class="help-lead">Do telefonu ukládá čtečka v prohlížeči <b>Chrome</b>. Teď je otevřená v jiném prohlížeči, nejspíš v Samsung Internetu, a ten to neumí.</p>
+      <a class="btn btn-accent save-chrome" data-open-chrome href="#">Otevřít čtečku v Chrome</a>
+      <p class="help-lead save-alt">Kdyby se Chrome neotevřel, zkopíruj adresu čtečky a vlož ji do Chrome nahoru do adresního řádku.
+        <button class="btn btn-ghost" type="button" data-copy="origin">Kopírovat <code></code></button></p>
+    </div>
+    <div class="save-chrome-steps">
+    <h2>Jednou povolit ukládání</h2>
+    <p class="help-lead">Chrome dovolí uložit čísla do telefonu jen stránce, které věří. Čtečce z domácí sítě to povolíš jednou a pak už jen ukládáš.</p>
+    <ol class="save-steps">
+      <li>Zkopíruj adresu nastavení, otevři novou kartu Chrome a vlož ji nahoru do adresního řádku.
+        <button class="btn btn-ghost" type="button" data-copy="flags">Kopírovat adresu nastavení</button></li>
+      <li>Do pole pod <b>Insecure origins treated as secure</b> vlož adresu čtečky.
+        <button class="btn btn-ghost" type="button" data-copy="origin">Kopírovat <code></code></button></li>
+      <li>Vedle přepni na <b>Enabled</b> a dole klepni na <b>Relaunch</b>.</li>
+      <li>Vrať se do čtečky a klepni na tlačítko znovu.</li>
+    </ol>
+    </div>
+    <button class="btn btn-accent" type="button" data-save-help-close>Rozumím</button>
+  </div>
+</div>
 <div id="toast" class="toast" role="status" hidden></div>
 <script src="app/vendor/page-flip.browser.js"></script>
 <script src="app/vendor/qrcode.js"></script>
