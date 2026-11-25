@@ -2711,8 +2711,28 @@
       .catch(() => setNote('Čtečka neodpovídá. Běží ještě její okno?', true));
   }
 
+  // náhled se nenačetl (čtečka zrovna neběžela): zkusit znovu, jinak zůstane na poličce bílý papír
+  const failedImgs = new Set();
+  function reloadImg(img) {
+    failedImgs.delete(img);
+    clearTimeout(img._retry);
+    if (img.isConnected) img.src = img.src.replace(/[?#].*$/, '') + '?r=' + Date.now();
+  }
+  document.addEventListener('error', (e) => {
+    const img = e.target;
+    if (!(img instanceof HTMLImageElement) || !img.src.includes('/thumb/')) return;
+    img._tries = (img._tries || 0) + 1;
+    failedImgs.add(img);
+    clearTimeout(img._retry);
+    if (img._tries <= 6) img._retry = setTimeout(() => reloadImg(img), Math.min(30, 2 ** img._tries) * 1000);
+  }, true);
+  const retryImgs = () => failedImgs.forEach((img) => { img._tries = 0; reloadImg(img); });
+  window.addEventListener('online', retryImgs);
+  window.addEventListener('focus', retryImgs);
+
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState !== 'visible') { sync.flush(); return; }
+    retryImgs();
     if (sync.ok) getReader().then((st) => { if (mergeReader(st) && manifest) { refreshShelf(); updateBookmarkBtn(); } });
   });
   window.addEventListener('pagehide', () => sync.flush());
